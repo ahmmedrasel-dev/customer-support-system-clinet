@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { toast } from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,21 +39,27 @@ export default function RegistrationForm({ onSuccess }: Props) {
     setServerError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/register", {
+      const res = await fetch("http://127.0.0.1:8000/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: values.name,
           email: values.email,
           password: values.password,
-          role: "customer",
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Registration failed");
+      if (!res.ok) {
+        toast.error(data?.message || data?.error || "Registration failed");
+        return;
+      }
+      localStorage.setItem("access_token", data.access_token);
+      toast.success(data?.message || "Registration successful!");
       onSuccess?.();
     } catch (err: any) {
       setServerError(err?.message || "Request failed");
+      // Only show toast if fetch itself fails (network error)
+      toast.error(err?.message || "Request failed");
     } finally {
       setLoading(false);
     }
