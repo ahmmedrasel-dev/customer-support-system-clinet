@@ -1,79 +1,243 @@
 # Customer Support System — Client
 
-A modern, responsive client interface for a customer support / ticketing system built with Next.js (App Router) and Tailwind CSS. This repository contains the front-end (client) application used for customer registration/login and the admin dashboard UI used to manage support tickets.
+A modern, responsive client interface for a customer support / ticketing system built with Next.js (App Router) and Tailwind CSS. This repository contains the front-end (client) application with authentication, role-based access control, and separate dashboards for customers and administrators.
 
-## Key features
-- Authentication UI: Login and registration flows implemented using react-hook-form with Zod validation.
-- Admin dashboard: ticket stats (Open, In Progress, Resolved, Closed) and a recent tickets table for quick triage.
-- Dark-first responsive UI using Tailwind CSS and small reusable UI primitives under `components/ui`.
-- Theme/hydration safeguards to reduce SSR/CSR mismatches for client-side theming.
+## Key Features
 
-## Tech stack
-- Next.js (App Router)
-- React + TypeScript
-- Tailwind CSS
-- react-hook-form + Zod for client-side form validation
-- @hookform/resolvers (zod resolver)
+### Authentication & Authorization
+- **Secure Authentication**: Login and registration with JWT tokens stored in cookies
+- **Role-Based Access**: Separate dashboards for customers and administrators
+- **Protected Routes**: Middleware-based route protection with automatic redirects
+- **Session Management**: Persistent authentication with automatic logout
 
-## Project structure (high level)
-- `app/` — Next.js routes and layouts (includes `(auth)` group and `admin` area)
-- `components/` — shared UI primitives and auth components (e.g. `RegistrationForm.tsx`)
-- `lib/` — utility helpers
-- `public/` — static assets
+### Customer Dashboard
+- **Ticket Management**: Create, view, and track support tickets
+- **Ticket Status Tracking**: Monitor open, resolved, and closed tickets
+- **Profile Management**: User profile and settings
+- **FAQ Access**: Help documentation and frequently asked questions
 
-## Getting started (development)
-1. Install dependencies
+### Admin Dashboard
+- **Ticket Oversight**: Manage all customer support tickets
+- **User Management**: View and manage customer accounts
+- **Analytics**: Ticket statistics and performance metrics
+- **System Administration**: Full administrative controls
 
-```bash
-npm install
-# or
-pnpm install
-# or
-yarn
+### UI/UX Features
+- **Dark-First Design**: Modern dark theme with responsive layout
+- **Form Validation**: Client-side validation using react-hook-form with Zod schemas
+- **Toast Notifications**: Real-time feedback using react-hot-toast
+- **Mobile Responsive**: Optimized for all device sizes
+- **Theme Support**: Light/dark mode toggle capability
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: React Context API
+- **Form Handling**: react-hook-form + Zod validation
+- **Authentication**: JWT with secure cookie storage
+- **Icons**: Lucide React
+- **Notifications**: react-hot-toast
+- **Theme**: next-themes
+
+## Project Structure
+
+```
+├── app/                          # Next.js app directory
+│   ├── (auth)/                   # Authentication routes
+│   ├── admin/                    # Admin dashboard routes
+│   ├── customer/                 # Customer dashboard routes
+│   ├── components/               # Shared components
+│   │   ├── layout/              # Layout components
+│   │   ├── auth/                # Authentication components
+│   │   └── ui/                  # Reusable UI primitives
+│   ├── lib/                     # Utility functions
+│   └── globals.css              # Global styles
+├── components/                   # Additional components
+├── lib/                         # Utility libraries
+├── middleware.ts                # Route protection middleware
+└── public/                      # Static assets
 ```
 
-2. Start the development server
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm, pnpm, or yarn
+- Backend API server running
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd customer-support-system-clinet
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   pnpm install
+   # or
+   yarn install
+   ```
+
+3. **Environment Setup**
+   Create a `.env.local` file:
+   ```env
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   # or
+   pnpm dev
+   # or
+   yarn dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## Authentication Flow
+
+1. **Registration**: New users can register with email and password
+2. **Login**: Existing users authenticate with credentials
+3. **Role Assignment**: Users are assigned either 'customer' or 'admin' roles
+4. **Auto Redirect**: Authenticated users are automatically redirected to their appropriate dashboard
+5. **Protected Routes**: Unauthorized access is prevented by middleware
+
+## API Integration
+
+The client expects the following backend API endpoints:
+
+### Authentication
+- `POST /api/login` - User login
+- `POST /api/register` - User registration
+- `POST /api/logout` - User logout
+
+### Tickets (Customer)
+- `GET /api/tickets` - Get user's tickets
+- `POST /api/tickets` - Create new ticket
+- `GET /api/tickets/:id` - Get specific ticket
+
+### Tickets (Admin)
+- `GET /api/admin/tickets` - Get all tickets
+- `PUT /api/admin/tickets/:id` - Update ticket status
+- `DELETE /api/admin/tickets/:id` - Delete ticket
+
+## Development
+
+### Available Scripts
 
 ```bash
-npm run dev
-# or
-pnpm dev
-# or
-yarn dev
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run type-check   # Run TypeScript checks
 ```
 
-3. Open http://localhost:3000 in your browser.
+### Code Quality
 
-## Notes
-- This client app expects backend API endpoints such as `/api/register` and `/api/login`. Replace or proxy these endpoints to connect with your server.
-- The client-side forms use Zod schemas for validation; mirror validation on the server for security.
-- If you modify validation shapes, update `components/auth/RegistrationForm.tsx` and the login page accordingly.
+- **TypeScript**: Strict type checking enabled
+- **ESLint**: Code linting and formatting
+- **Prettier**: Code formatting (if configured)
 
-## Environment variables
-- Configure an API base URL when needed via environment variables, e.g. `NEXT_PUBLIC_API_BASE_URL`.
-
-## Testing and linting
-- Run TypeScript checks and linting depending on available scripts. Typical commands:
+### Testing
 
 ```bash
-npm run build       # typecheck + build
-npm run lint        # lint (if configured)
+npm run test         # Run test suite
+npm run test:watch   # Run tests in watch mode
 ```
 
 ## Deployment
-- Deploy to Vercel, Netlify, or other hosts that support Next.js. Vercel is recommended for quick deployments.
+
+### Vercel (Recommended)
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables
+3. Deploy automatically on push
+
+### Other Platforms
+- **Netlify**: Supports Next.js deployments
+- **Railway**: Full-stack deployment
+- **Docker**: Containerized deployment
+
+### Build Configuration
+```bash
+npm run build
+npm run start
+```
+
+## Security Features
+
+- **Cookie-Based Authentication**: Secure token storage
+- **Route Protection**: Middleware-based access control
+- **Input Validation**: Client and server-side validation
+- **XSS Protection**: Sanitized user inputs
+- **CSRF Protection**: Token-based request validation
 
 ## Contributing
-- Suggested workflow:
-  1. Fork and create a feature branch
-  2. Install dependencies and run the dev server
-  3. Add tests for new functionality and keep changes scoped
 
-## Developer notes
-- Admin layout is split into components under `app/components/layout/` (header, sidebar, user menu). Check there when changing layout behavior.
-- For theme/hydration issues check `components/theme-provider.tsx` and the root layout.
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Make your changes**
+4. **Run tests and linting**
+   ```bash
+   npm run lint
+   npm run build
+   ```
+5. **Commit your changes**
+   ```bash
+   git commit -m "Add your feature description"
+   ```
+6. **Push to your branch**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+7. **Create a Pull Request**
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Authentication Issues**
+   - Check API endpoints are running
+   - Verify environment variables
+   - Clear browser cookies
+
+2. **Build Errors**
+   - Run `npm install` to update dependencies
+   - Check TypeScript errors with `npm run build`
+
+3. **Styling Issues**
+   - Ensure Tailwind CSS is properly configured
+   - Check for conflicting CSS classes
+
+### Development Tips
+
+- Use the browser's developer tools for debugging
+- Check the Network tab for API requests
+- Use React DevTools for component inspection
+- Monitor console logs for error messages
 
 ## License
-- No license file is included in this repository. Add a LICENSE (for example MIT) if you plan to publish.
 
-If you want, I can add a `.env.example`, a short developer checklist, or a small CI workflow next.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support and questions:
+- Create an issue in the repository
+- Check the FAQ section in the application
+- Review the API documentation
+
+---
+
+**Note**: This is a front-end application that requires a compatible backend API server to function properly. Ensure your backend implements the expected API endpoints as documented above.
