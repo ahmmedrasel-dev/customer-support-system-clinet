@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/components/auth/AuthContext";
 import { toast } from "react-hot-toast";
 
 const schema = z.object({
@@ -13,9 +14,10 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
+export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const {
     register,
@@ -39,9 +41,8 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         toast.error(data?.message || data?.error || "Login failed");
         return;
       }
-      localStorage.setItem("access_token", data.access_token);
+      login(data.access_token, data.user);
       toast.success(data?.message || "Login successful!");
-      onSuccess?.();
     } catch (err: any) {
       toast.error(err?.message || "Login failed. Please try again.");
     } finally {
