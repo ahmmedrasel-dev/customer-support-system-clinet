@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Customer Support System — Client
 
-## Getting Started
+A modern, responsive client interface for a customer support / ticketing system built with Next.js (App Router) and Tailwind CSS. This repository contains the front-end (client) application used for customer registration/login and the admin dashboard UI used to manage support tickets.
 
-First, run the development server:
+## Key features
+- Authentication UI: Login and registration flows implemented using react-hook-form with Zod validation.
+- Admin dashboard: ticket stats (Open, In Progress, Resolved, Closed) and a recent tickets table for quick triage.
+- Dark-first responsive UI using Tailwind CSS and small reusable UI primitives under `components/ui`.
+- Theme/hydration safeguards to reduce SSR/CSR mismatches for client-side theming.
+
+## Tech stack
+- Next.js (App Router)
+- React + TypeScript
+- Tailwind CSS
+- react-hook-form + Zod for client-side form validation
+- @hookform/resolvers (zod resolver)
+
+## Project structure (high level)
+- `app/` — Next.js routes and layouts (includes `(auth)` group and `admin` area)
+- `components/` — shared UI primitives and auth components (e.g. `RegistrationForm.tsx`)
+- `lib/` — utility helpers
+- `public/` — static assets
+
+## Getting started (development)
+1. Install dependencies
+
+```bash
+npm install
+# or
+pnpm install
+# or
+yarn
+```
+
+2. Start the development server
 
 ```bash
 npm run dev
 # or
-yarn dev
-# or
 pnpm dev
 # or
-bun dev
+yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Open http://localhost:3000 in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Notes
+- This client app expects backend API endpoints such as `/api/register` and `/api/login`. Replace or proxy these endpoints to connect with your server.
+- The client-side forms use Zod schemas for validation; mirror validation on the server for security.
+- If you modify validation shapes, update `components/auth/RegistrationForm.tsx` and the login page accordingly.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
+- Configure an API base URL when needed via environment variables, e.g. `NEXT_PUBLIC_API_BASE_URL`.
 
-## Learn More
+## Testing and linting
+- Run TypeScript checks and linting depending on available scripts. Typical commands:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build       # typecheck + build
+npm run lint        # lint (if configured)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
+- Deploy to Vercel, Netlify, or other hosts that support Next.js. Vercel is recommended for quick deployments.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
+- Suggested workflow:
+  1. Fork and create a feature branch
+  2. Install dependencies and run the dev server
+  3. Add tests for new functionality and keep changes scoped
 
-## Deploy on Vercel
+## Developer notes
+- Admin layout is split into components under `app/components/layout/` (header, sidebar, user menu). Check there when changing layout behavior.
+- For theme/hydration issues check `components/theme-provider.tsx` and the root layout.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
+- No license file is included in this repository. Add a LICENSE (for example MIT) if you plan to publish.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you want, I can add a `.env.example`, a short developer checklist, or a small CI workflow next.

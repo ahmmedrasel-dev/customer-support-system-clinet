@@ -179,7 +179,7 @@ export default function RegistrationForm({ onSuccess }: Props) {
 
         <div className="mt-6 text-center text-sm text-slate-300">
           Already have an account?{" "}
-          <a href="/auth" className="text-sky-400 hover:underline">
+          <a href="/" className="text-sky-400 hover:underline">
             Sign in
           </a>
         </div>
