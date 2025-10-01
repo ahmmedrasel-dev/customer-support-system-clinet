@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
@@ -26,6 +27,7 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 export default function RegistrationForm({ onSuccess }: Props) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -54,8 +56,12 @@ export default function RegistrationForm({ onSuccess }: Props) {
         toast.error(data?.message || data?.error || "Registration failed");
         return;
       }
-      localStorage.setItem("access_token", data.access_token);
-      toast.success(data?.message || "Registration successful!");
+      // Don't store token immediately, let user login instead
+      toast.success(data?.message || "Registration successful! Please log in with your credentials.");
+      
+      // Navigate to login page after successful registration
+      router.push("/");
+      
       onSuccess?.();
     } catch (err: any) {
       setServerError(err?.message || "Request failed");
