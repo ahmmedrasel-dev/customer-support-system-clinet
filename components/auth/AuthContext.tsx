@@ -1,5 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { setCookie, getCookie, removeCookie } from "@/lib/cookies";
 
 export type AuthUser = {
   id: number;
@@ -21,36 +23,37 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("access_token");
+    const storedUser = getCookie("user");
+    const storedToken = getCookie("access_token");
     if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
+      setUser(storedUser);
       setToken(storedToken);
     }
   }, []);
 
   const login = (newToken: string, newUser: AuthUser) => {
-    localStorage.setItem("access_token", newToken);
-    localStorage.setItem("user", JSON.stringify(newUser));
+    setCookie("access_token", newToken);
+    setCookie("user", newUser);
     setToken(newToken);
     setUser(newUser);
 
     // Redirect based on role
     if (newUser.role === "admin") {
-      window.location.href = "/admin";
+      router.push("/admin");
     } else {
-      window.location.href = "/customer";
+      router.push("/customer");
     }
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("access_token");
-    window.location.href = "/";
+    removeCookie("user");
+    removeCookie("access_token");
+    router.push("/");
   };
 
   return (

@@ -10,8 +10,28 @@ import {
   DropdownMenuSeparator,
 } from "./dropdown";
 
+import { useAuth } from "@/components/auth/AuthContext";
+
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  // Get initials from user's name
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  const handleLogout = () => {
+    setIsOpen(false);
+    logout();
+  };
+
+  if (!user) return null;
+
   return (
     <div className="relative">
       <button
@@ -20,21 +40,30 @@ export const UserMenu = () => {
       >
         <Avatar className="h-8 w-8">
           <AvatarImage
-            src="https://placehold.co/100x100/orange/white?text=A"
-            alt="Admin"
+            src={`https://placehold.co/100x100/orange/white?text=${getInitials(
+              user.name
+            )}`}
+            alt={user.name}
           />
-          <AvatarFallback>AD</AvatarFallback>
+          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
         </Avatar>
+        <div className="hidden md:block text-left mr-2">
+          <div className="text-sm font-medium text-gray-200">{user.name}</div>
+          <div className="text-xs text-gray-400 capitalize">{user.role}</div>
+        </div>
         <ChevronDown className="h-4 w-4 text-gray-500" />
       </button>
       <DropdownMenu open={isOpen} onClose={() => setIsOpen(false)} align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          <div className="text-sm font-medium">{user.name}</div>
+          <div className="text-xs text-gray-400">{user.email}</div>
+        </DropdownMenuLabel>
         <DropdownMenuItem onClick={() => setIsOpen(false)}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => setIsOpen(false)}>
+        <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4 text-red-500" />
           <span className="text-red-500">Logout</span>
         </DropdownMenuItem>
