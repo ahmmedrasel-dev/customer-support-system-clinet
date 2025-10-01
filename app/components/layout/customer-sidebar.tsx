@@ -23,7 +23,7 @@ export const CustomerSidebar = ({ isOpen, onClose }: any) => {
       icon: MessageSquare,
       label: "Create Ticket",
     },
-    { href: "/customer/tickets/open", icon: Clock, label: "Open Tickets" },
+    { href: "/customer/tickets", icon: Clock, label: "My Tickets" },
     {
       href: "/customer/tickets/resolved",
       icon: CheckCircle,
