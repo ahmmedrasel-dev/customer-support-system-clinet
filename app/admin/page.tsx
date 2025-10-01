@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -10,120 +12,260 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Inbox,
+  RefreshCw,
+  CheckCircle,
+  Archive,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 
-const stats = [
-  { id: 1, label: "Total Orders", value: 1284, delta: "+8%" },
-  { id: 2, label: "Revenue", value: "$42,300", delta: "+5%" },
-  { id: 3, label: "Products", value: 342, delta: "-1%" },
-  { id: 4, label: "Active Users", value: 912, delta: "+12%" },
-];
+type Ticket = {
+  id: string;
+  subject: string;
+  customer: string;
+  agent: string;
+  status: "Open" | "In Progress" | "Resolved" | "Closed";
+  priority: "Low" | "Medium" | "High";
+  date: string;
+};
 
-const recentOrders = [
+const initialTickets: Ticket[] = [
   {
-    id: "#1001",
-    customer: "Alice",
-    total: "$120.00",
-    status: "Paid",
+    id: "TCK-1001",
+    subject: "Cannot login to account",
+    customer: "Alice Johnson",
+    agent: "Sam",
+    status: "Open",
+    priority: "High",
+    date: "2025-10-01",
+  },
+  {
+    id: "TCK-1000",
+    subject: "Payment not processed",
+    customer: "Bob Martin",
+    agent: "Priya",
+    status: "In Progress",
+    priority: "Medium",
     date: "2025-09-30",
   },
   {
-    id: "#1000",
-    customer: "Bob",
-    total: "$45.00",
-    status: "Pending",
-    date: "2025-09-29",
-  },
-  {
-    id: "#999",
-    customer: "Charlie",
-    total: "$220.00",
-    status: "Shipped",
+    id: "TCK-0999",
+    subject: "Feature request: export",
+    customer: "Charlie Park",
+    agent: "Mina",
+    status: "Resolved",
+    priority: "Low",
     date: "2025-09-28",
   },
-];
-
-const products = [
-  { id: "p1", name: "Wireless Mouse", stock: 34 },
-  { id: "p2", name: "Mechanical Keyboard", stock: 12 },
-  { id: "p3", name: "USB-C Hub", stock: 0 },
+  {
+    id: "TCK-0998",
+    subject: "Bug: UI overlap on mobile",
+    customer: "Dana Lee",
+    agent: "Sam",
+    status: "Closed",
+    priority: "Low",
+    date: "2025-09-20",
+  },
 ];
 
 export default function AdminPage() {
+  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+
+  const counts = tickets.reduce(
+    (acc, t) => {
+      acc.total += 1;
+      if (t.status === "Open") acc.open += 1;
+      if (t.status === "In Progress") acc.inprogress += 1;
+      if (t.status === "Resolved") acc.resolved += 1;
+      if (t.status === "Closed") acc.closed += 1;
+      return acc;
+    },
+    { total: 0, open: 0, inprogress: 0, resolved: 0, closed: 0 }
+  );
+
+  function toggleNextStatus(id: string) {
+    setTickets((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        const next: Record<string, Ticket["status"]> = {
+          Open: "In Progress",
+          "In Progress": "Resolved",
+          Resolved: "Closed",
+          Closed: "Closed",
+        };
+        return { ...t, status: next[t.status] };
+      })
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
+          <h1 className="text-2xl font-semibold">Support Tickets</h1>
           <p className="text-sm text-muted-foreground">
-            Overview of recent activity and statistics
+            Overview of ticket activity
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="ghost">Export</Button>
-          <Link href="/admin/products/new">
-            <Button>Create Product</Button>
+          <Link href="/admin/tickets/new">
+            <Button>Create Ticket</Button>
           </Link>
         </div>
       </div>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <Card key={s.id} className="p-4">
-            <CardHeader>
-              <CardTitle className="text-sm">{s.label}</CardTitle>
-              <CardDescription className="mt-2 text-2xl font-semibold">
-                {s.value}
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <span className="text-sm text-muted-foreground">
-                {s.delta} vs last period
-              </span>
-            </CardFooter>
-          </Card>
-        ))}
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {[
+          {
+            key: "total",
+            label: "Total",
+            icon: Inbox,
+            accent: "bg-gradient-to-br from-indigo-500 to-violet-500",
+            delta: "+12",
+          },
+          {
+            key: "open",
+            label: "Open",
+            icon: Inbox,
+            accent: "bg-red-500",
+            delta: "+3",
+          },
+          {
+            key: "inprogress",
+            label: "In Progress",
+            icon: RefreshCw,
+            accent: "bg-yellow-500",
+            delta: "+1",
+          },
+          {
+            key: "resolved",
+            label: "Resolved",
+            icon: CheckCircle,
+            accent: "bg-green-500",
+            delta: "+6",
+          },
+          {
+            key: "closed",
+            label: "Closed",
+            icon: Archive,
+            accent: "bg-zinc-600",
+            delta: "+10",
+          },
+        ].map((m) => {
+          const Icon = m.icon as React.ComponentType<any>;
+          const value = (counts as Record<string, number>)[m.key] ?? 0;
+          const positive = String(m.delta).startsWith("+");
+          return (
+            <Card key={m.key} className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2 rounded-lg ${m.accent} text-white shadow-md`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {m.label}
+                    </div>
+                    <div className="mt-1 text-2xl font-bold">{value}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground">
+                    vs last period
+                  </div>
+                  <div
+                    className={`mt-1 inline-flex items-center text-sm font-medium ${
+                      positive ? "text-green-500" : "text-red-500"
+                    }`}
+                  >
+                    {positive ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )}
+                    <span className="ml-1">{m.delta}</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
       </section>
 
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="col-span-2">
+      <section className="grid grid-cols-1 gap-6">
+        <Card>
           <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>Latest orders placed by customers</CardDescription>
+            <CardTitle>Recent Tickets</CardTitle>
+            <CardDescription>Latest support tickets</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full table-auto text-sm">
                 <thead>
                   <tr className="text-left text-muted-foreground">
-                    <th className="px-3 py-2">Order</th>
+                    <th className="px-3 py-2">Ticket</th>
+                    <th className="px-3 py-2">Subject</th>
                     <th className="px-3 py-2">Customer</th>
-                    <th className="px-3 py-2">Total</th>
+                    <th className="px-3 py-2">Agent</th>
+                    <th className="px-3 py-2">Priority</th>
                     <th className="px-3 py-2">Status</th>
                     <th className="px-3 py-2">Date</th>
+                    <th className="px-3 py-2">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {recentOrders.map((o) => (
-                    <tr key={o.id} className="border-t">
-                      <td className="px-3 py-2 font-medium">{o.id}</td>
-                      <td className="px-3 py-2">{o.customer}</td>
-                      <td className="px-3 py-2">{o.total}</td>
+                  {tickets.map((t) => (
+                    <tr key={t.id} className="border-t">
+                      <td className="px-3 py-2 font-medium">{t.id}</td>
+                      <td className="px-3 py-2 max-w-xs truncate">
+                        {t.subject}
+                      </td>
+                      <td className="px-3 py-2">{t.customer}</td>
+                      <td className="px-3 py-2">{t.agent}</td>
+                      <td className="px-3 py-2">
+                        <span className="text-xs rounded-full px-2 py-1 bg-zinc-800 text-muted-foreground">
+                          {t.priority}
+                        </span>
+                      </td>
                       <td className="px-3 py-2">
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
-                            o.status === "Paid"
+                            t.status === "Open"
+                              ? "bg-red-100 text-red-800"
+                              : t.status === "In Progress"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : t.status === "Resolved"
                               ? "bg-green-100 text-green-800"
-                              : o.status === "Shipped"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-yellow-100 text-yellow-800"
+                              : "bg-zinc-700 text-gray-200"
                           }`}
                         >
-                          {o.status}
+                          {t.status}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-muted-foreground">
-                        {o.date}
+                        {t.date}
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/admin/tickets/${t.id}`}>
+                            <Button variant="ghost" size="sm">
+                              View
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleNextStatus(t.id)}
+                          >
+                            Next Status
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -132,278 +274,11 @@ export default function AdminPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Link href="/admin/orders">
-              <Button variant="ghost">View all orders</Button>
+            <Link href="/admin/tickets">
+              <Button variant="ghost">View all tickets</Button>
             </Link>
           </CardFooter>
         </Card>
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Products</CardTitle>
-              <CardDescription>Low stock and recent products</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {products.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{p.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Stock: {p.stock}
-                      </div>
-                    </div>
-                    <div>
-                      <Button
-                        variant={p.stock === 0 ? "destructive" : "ghost"}
-                        size="sm"
-                      >
-                        Manage
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Team</CardTitle>
-              <CardDescription>Active admins</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="Admin"
-                  />
-                  <AvatarFallback>AD</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-medium">Admin User</div>
-                  <div className="text-xs text-muted-foreground">Owner</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>Latest orders placed by customers</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full table-auto text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground">
-                    <th className="px-3 py-2">Order</th>
-                    <th className="px-3 py-2">Customer</th>
-                    <th className="px-3 py-2">Total</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="px-3 py-2">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((o) => (
-                    <tr key={o.id} className="border-t">
-                      <td className="px-3 py-2 font-medium">{o.id}</td>
-                      <td className="px-3 py-2">{o.customer}</td>
-                      <td className="px-3 py-2">{o.total}</td>
-                      <td className="px-3 py-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
-                            o.status === "Paid"
-                              ? "bg-green-100 text-green-800"
-                              : o.status === "Shipped"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {o.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground">
-                        {o.date}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Link href="/admin/orders">
-              <Button variant="ghost">View all orders</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Products</CardTitle>
-              <CardDescription>Low stock and recent products</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {products.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{p.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Stock: {p.stock}
-                      </div>
-                    </div>
-                    <div>
-                      <Button
-                        variant={p.stock === 0 ? "destructive" : "ghost"}
-                        size="sm"
-                      >
-                        Manage
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Team</CardTitle>
-              <CardDescription>Active admins</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="Admin"
-                  />
-                  <AvatarFallback>AD</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-medium">Admin User</div>
-                  <div className="text-xs text-muted-foreground">Owner</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>Latest orders placed by customers</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full table-auto text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground">
-                    <th className="px-3 py-2">Order</th>
-                    <th className="px-3 py-2">Customer</th>
-                    <th className="px-3 py-2">Total</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="px-3 py-2">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((o) => (
-                    <tr key={o.id} className="border-t">
-                      <td className="px-3 py-2 font-medium">{o.id}</td>
-                      <td className="px-3 py-2">{o.customer}</td>
-                      <td className="px-3 py-2">{o.total}</td>
-                      <td className="px-3 py-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
-                            o.status === "Paid"
-                              ? "bg-green-100 text-green-800"
-                              : o.status === "Shipped"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {o.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground">
-                        {o.date}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Link href="/admin/orders">
-              <Button variant="ghost">View all orders</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Products</CardTitle>
-              <CardDescription>Low stock and recent products</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {products.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{p.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Stock: {p.stock}
-                      </div>
-                    </div>
-                    <div>
-                      <Button
-                        variant={p.stock === 0 ? "destructive" : "ghost"}
-                        size="sm"
-                      >
-                        Manage
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Team</CardTitle>
-              <CardDescription>Active admins</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="Admin"
-                  />
-                  <AvatarFallback>AD</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-medium">Admin User</div>
-                  <div className="text-xs text-muted-foreground">Owner</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </section>
     </div>
   );
