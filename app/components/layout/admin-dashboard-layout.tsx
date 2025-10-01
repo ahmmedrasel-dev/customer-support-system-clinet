@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
-import { ThemeProviderLocal } from "./theme";
 
 export function AdminDashboardLayout({ children }: any) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
