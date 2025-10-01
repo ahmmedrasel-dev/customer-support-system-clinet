@@ -1,18 +1,17 @@
 "use client";
 
-import React from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
 import {
-  MessageSquare,
-  LayoutDashboard,
-  Clock,
   CheckCircle,
-  XCircle,
-  User,
+  Clock,
   FileQuestion,
+  LayoutDashboard,
+  MessageSquare,
   Settings,
+  User,
+  XCircle,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export const CustomerSidebar = ({ isOpen, onClose }: any) => {
   const pathname = usePathname();
@@ -20,7 +19,7 @@ export const CustomerSidebar = ({ isOpen, onClose }: any) => {
   const navItems = [
     { href: "/customer/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     {
-      href: "/customer/tickets/new",
+      href: "/customer/create-ticket",
       icon: MessageSquare,
       label: "Create Ticket",
     },

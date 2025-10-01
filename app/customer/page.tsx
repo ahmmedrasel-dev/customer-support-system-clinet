@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Archive,
+  ArrowDown,
+  ArrowUp,
+  CheckCircle,
   Inbox,
   RefreshCw,
-  CheckCircle,
-  Archive,
-  ArrowUp,
-  ArrowDown,
 } from "lucide-react";
+import Link from "next/link";
+import React, { useState } from "react";
 
 type Ticket = {
   id: string;
@@ -71,6 +71,7 @@ const initialTickets: Ticket[] = [
 
 export default function CustomerPage() {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+
 
   const counts = tickets.reduce(
     (acc, t) => {

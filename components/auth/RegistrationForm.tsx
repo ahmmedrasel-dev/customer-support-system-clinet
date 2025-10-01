@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
-import { toast } from "react-hot-toast";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
+import { z } from "zod";
 
 type Props = {
   onSuccess?: () => void;
@@ -186,9 +187,9 @@ export default function RegistrationForm({ onSuccess }: Props) {
 
         <div className="mt-6 text-center text-sm text-slate-300">
           Already have an account?{" "}
-          <a href="/" className="text-sky-400 hover:underline">
+          <Link href="/" className="text-sky-400 hover:underline">
             Sign in
-          </a>
+          </Link>
         </div>
       </div>
     </div>

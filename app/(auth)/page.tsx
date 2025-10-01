@@ -1,5 +1,5 @@
 import LoginForm from "@/components/auth/LoginForm";
-import React from "react";
+import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -14,9 +14,9 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-slate-300">
           Don’t have an account?{" "}
-          <a href="/register" className="text-sky-400 hover:underline">
+          <Link href="/register" className="text-sky-400 hover:underline">
             Sign up
-          </a>
+          </Link>
         </div>
       </div>
     </main>
