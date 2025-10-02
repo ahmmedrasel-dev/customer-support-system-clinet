@@ -345,14 +345,20 @@ export default function AdminTicketDetailPage() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/admin/tickets">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tickets
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold">Ticket #{ticket.id}</h1>
-          <p className="text-muted-foreground">{ticket.subject}</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Ticket #{ticket.id}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">{ticket.subject}</p>
         </div>
       </div>
 
@@ -463,19 +469,23 @@ export default function AdminTicketDetailPage() {
                 {ticket.attachments.map((attachment) => (
                   <div
                     key={attachment.id}
-                    className="flex items-center gap-2 p-2 border rounded"
+                    className="flex items-center gap-2 p-2 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800"
                   >
-                    <Paperclip className="h-4 w-4 text-muted-foreground" />
+                    <Paperclip className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {attachment.file_name}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {formatFileSize(attachment.size)} •{" "}
                         {formatDate(attachment.created_at)}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </Button>
@@ -508,24 +518,32 @@ export default function AdminTicketDetailPage() {
           ) : (
             <div className="space-y-4">
               {ticket.comments.map((comment) => (
-                <div key={comment.id} className="border rounded-lg p-4">
+                <div
+                  key={comment.id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
+                >
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                         <User className="h-4 w-4" />
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="font-medium">{comment.user.name}</span>
-                        <Badge variant="outline" className="text-xs">
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {comment.user.name}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                        >
                           {comment.user.role}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           {formatDate(comment.created_at)}
                         </span>
                       </div>
-                      <p className="text-sm whitespace-pre-wrap">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                         {comment.body}
                       </p>
                     </div>

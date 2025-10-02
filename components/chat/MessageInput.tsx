@@ -62,7 +62,7 @@ export default function MessageInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-t border-gray-200 dark:border-gray-700 p-4"
+      className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-900"
     >
       <div className="flex items-end space-x-2">
         <Textarea

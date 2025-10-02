@@ -183,7 +183,7 @@ export default function ChatWindow({ ticketId }: ChatWindowProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 h-[500px] flex flex-col">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-[500px] flex flex-col">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold">Real-time Chat</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">

@@ -34,13 +34,13 @@ export function CustomerDashboardLayout({ children }: Props) {
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
           pageTitle={getPageTitle()}
         />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
       </div>
 
       {/* Backdrop for mobile sidebar */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          className="flex-1 overflow-auto p-4 sm:p-6"
           onClick={() => setSidebarOpen(false)}
         />
       )}

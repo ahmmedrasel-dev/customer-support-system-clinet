@@ -34,7 +34,7 @@ export default function ChatWidget({
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {isOpen ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-[380px] md:w-[420px] border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg w-[380px] md:w-[420px] border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-medium">Support Chat</h3>
             <Button variant="ghost" size="sm" onClick={toggleChat}>

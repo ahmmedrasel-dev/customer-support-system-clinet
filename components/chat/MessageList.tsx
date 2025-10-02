@@ -136,8 +136,8 @@ export default function MessageList({
                 <div
                   className={`rounded-lg p-3 ${
                     isCurrentUser
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      ? "bg-blue-500 text-white dark:bg-blue-600"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   }`}
                 >
                   {!isCurrentUser && (
