@@ -3,7 +3,13 @@
 import { useAuth } from "@/components/auth/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertCircle,
   Calendar,
@@ -11,7 +17,7 @@ import {
   Clock,
   FileText,
   Plus,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -39,17 +45,19 @@ type Ticket = {
 export default function CustomerTicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    if (isLoading) return; // Wait for auth state to load
+
     if (!isAuthenticated) {
       toast.error("Please log in to view your tickets");
       router.push("/");
       return;
     }
     fetchTickets();
-  }, [isAuthenticated, token, router]);
+  }, [isAuthenticated, isLoading, token, router]);
 
   const fetchTickets = async () => {
     try {
@@ -130,10 +138,18 @@ export default function CustomerTicketsPage() {
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-10 text-center">
+        <p>Loading authentication...</p>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto py-10 text-center">
-        <p>Checking authentication...</p>
+        <p>Redirecting to login...</p>
       </div>
     );
   }
@@ -217,7 +233,9 @@ export default function CustomerTicketsPage() {
           <CardDescription>
             {tickets.length === 0
               ? "You haven't created any tickets yet."
-              : `You have ${tickets.length} ticket${tickets.length !== 1 ? "s" : ""}`}
+              : `You have ${tickets.length} ticket${
+                  tickets.length !== 1 ? "s" : ""
+                }`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -256,7 +274,9 @@ export default function CustomerTicketsPage() {
                       <td className="p-4 font-medium">#{ticket.id}</td>
                       <td className="p-4">
                         <div className="max-w-xs">
-                          <p className="font-medium truncate">{ticket.subject}</p>
+                          <p className="font-medium truncate">
+                            {ticket.subject}
+                          </p>
                           <p className="text-sm text-muted-foreground truncate">
                             {ticket.description}
                           </p>
@@ -270,14 +290,22 @@ export default function CustomerTicketsPage() {
                         )}
                       </td>
                       <td className="p-4">
-                        <Badge className={`${getPriorityColor(ticket.priority)} text-white`}>
+                        <Badge
+                          className={`${getPriorityColor(
+                            ticket.priority
+                          )} text-white`}
+                        >
                           {ticket.priority.toUpperCase()}
                         </Badge>
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
                           {getStatusIcon(ticket.status)}
-                          <Badge className={`${getStatusColor(ticket.status)} text-white`}>
+                          <Badge
+                            className={`${getStatusColor(
+                              ticket.status
+                            )} text-white`}
+                          >
                             {ticket.status.replace("_", " ").toUpperCase()}
                           </Badge>
                         </div>
@@ -291,7 +319,8 @@ export default function CustomerTicketsPage() {
                       <td className="p-4">
                         {ticket.attachments && ticket.attachments.length > 0 ? (
                           <Badge variant="outline">
-                            {ticket.attachments.length} file{ticket.attachments.length !== 1 ? "s" : ""}
+                            {ticket.attachments.length} file
+                            {ticket.attachments.length !== 1 ? "s" : ""}
                           </Badge>
                         ) : (
                           <span className="text-muted-foreground">-</span>
