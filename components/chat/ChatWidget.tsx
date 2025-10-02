@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useAuth } from "@/components/auth/AuthContext";
 import ChatWindow from "./ChatWindow";
 import FileUpload from "./FileUpload";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export default function ChatWidget({
   ticketId,
   initialOpen = false,
 }: ChatWidgetProps) {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(initialOpen);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -25,9 +27,10 @@ export default function ChatWidget({
     }
   };
 
-  const handleNewMessage = () => {
+  // Function to handle unread count updates from ChatWindow
+  const handleUnreadUpdate = (count: number) => {
     if (!isOpen) {
-      setUnreadCount((prev) => prev + 1);
+      setUnreadCount((prev) => prev + count);
     }
   };
 
@@ -42,7 +45,11 @@ export default function ChatWidget({
             </Button>
           </div>
 
-          <ChatWindow ticketId={ticketId} />
+          <ChatWindow
+            ticketId={ticketId}
+            isVisible={isOpen}
+            onUnreadUpdate={handleUnreadUpdate}
+          />
 
           <div className="p-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <FileUpload ticketId={ticketId} />

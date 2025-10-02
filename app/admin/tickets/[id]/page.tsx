@@ -110,7 +110,7 @@ export default function AdminTicketDetailPage() {
   const fetchTicket = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/admin/tickets/${ticketId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tickets/${ticketId}`,
         {
           method: "GET",
           headers: {
@@ -151,7 +151,7 @@ export default function AdminTicketDetailPage() {
     setSubmittingComment(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/comments", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/comments", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -210,7 +210,7 @@ export default function AdminTicketDetailPage() {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/admin/tickets/${ticketId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tickets/${ticketId}`,
         {
           method: "PUT",
           headers: {

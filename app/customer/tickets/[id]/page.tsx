@@ -97,7 +97,7 @@ export default function CustomerTicketDetailPage() {
   const fetchTicket = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/tickets/${ticketId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tickets/${ticketId}`,
         {
           method: "GET",
           headers: {
@@ -142,17 +142,20 @@ export default function CustomerTicketDetailPage() {
     setSubmittingComment(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/comments", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ticket_id: ticketId,
-          body: commentText.trim(),
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/comments`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ticket_id: ticketId,
+            body: commentText.trim(),
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to add comment");

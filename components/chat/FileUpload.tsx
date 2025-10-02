@@ -46,56 +46,50 @@ export default function FileUpload({
       const formData = new FormData();
       formData.append("file", file);
 
-      const xhr = new XMLHttpRequest();
-
-      // Track upload progress
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round(
-            (event.loaded / event.total) * 100
-          );
-          setProgress(percentComplete);
-        }
-      });
-
-      // Promise wrapper for the XHR request
-      const uploadPromise = new Promise<string>((resolve, reject) => {
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-              const response = JSON.parse(xhr.responseText);
-              resolve(response.url);
-            } else {
-              reject(new Error("Upload failed"));
-            }
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
           }
-        };
-      });
+          return prev + Math.random() * 20;
+        });
+      }, 200);
 
-      // Set up and send the request
-      xhr.open(
-        "POST",
-        `http://127.0.0.1:8000/api/tickets/${ticketId}/chat/upload`,
-        true
+      // Create fetch request
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tickets/${ticketId}/chat/upload`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
       );
-      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-      xhr.send(formData);
 
-      // Wait for the upload to complete
-      const fileUrl = await uploadPromise;
+      clearInterval(progressInterval);
+      setProgress(100);
 
-      // Send a message with the file URL
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Upload failed with status ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      const fileUrl = result.url;
       await sendFileMessage(fileUrl);
 
       toast.success("File uploaded successfully");
-
-      // Call the callback with the file URL
       if (onUploadComplete) {
         onUploadComplete(fileUrl);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading file:", error);
-      toast.error("Failed to upload file");
+      toast.error(error.message || "Failed to upload file");
     } finally {
       setIsUploading(false);
       setProgress(0);
@@ -105,7 +99,7 @@ export default function FileUpload({
   const sendFileMessage = async (fileUrl: string) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/tickets/${ticketId}/chat/messages`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tickets/${ticketId}/chat/messages`,
         {
           method: "POST",
           headers: {
@@ -124,7 +118,6 @@ export default function FileUpload({
       }
     } catch (error) {
       console.error("Error sending file message:", error);
-      // We won't show this error since the file is already uploaded
     }
   };
 
@@ -148,8 +141,8 @@ export default function FileUpload({
           <span>
             {isUploading ? (
               <>
-                <div className="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin mr-2" />
-                Uploading {progress}%
+                <div className="w-4 h-4 border-2 border-t-transparent border-primary rounded-full animate-spin mr-2" />
+                Uploading {progress > 0 ? `${Math.round(progress)}%` : "..."}
               </>
             ) : (
               <>

@@ -22,14 +22,28 @@ type Message = {
 
 type ChatWindowProps = {
   ticketId: number;
+  isVisible?: boolean;
+  onUnreadUpdate?: (count: number) => void;
 };
 
-export default function ChatWindow({ ticketId }: ChatWindowProps) {
+export default function ChatWindow({
+  ticketId,
+  isVisible = true,
+  onUnreadUpdate,
+}: ChatWindowProps) {
   const { user, token } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const pusherRef = useRef<Pusher | null>(null);
   const channelRef = useRef<any>(null);
+  const isVisibleRef = useRef(isVisible);
+  const onUnreadUpdateRef = useRef(onUnreadUpdate);
+
+  // Update refs when props change
+  useEffect(() => {
+    isVisibleRef.current = isVisible;
+    onUnreadUpdateRef.current = onUnreadUpdate;
+  }, [isVisible, onUnreadUpdate]);
 
   // Fetch initial messages
   useEffect(() => {
@@ -40,16 +54,32 @@ export default function ChatWindow({ ticketId }: ChatWindowProps) {
     markMessagesAsRead();
   }, [ticketId, token]);
 
-  // Setup Pusher connection
+  // Mark messages as read when chat becomes visible
+  useEffect(() => {
+    if (isVisible && token) {
+      markMessagesAsRead();
+    }
+  }, [isVisible, token]);
+
+  // Setup Pusher connection (only recreate when essential props change)
   useEffect(() => {
     if (!token) return;
+
+    // Clean up existing connection
+    if (channelRef.current) {
+      channelRef.current.unbind_all();
+      pusherRef.current?.unsubscribe(`private-ticket.${ticketId}`);
+    }
+    if (pusherRef.current) {
+      pusherRef.current.disconnect();
+    }
 
     // Initialize Pusher
     pusherRef.current = new Pusher(
       process.env.NEXT_PUBLIC_PUSHER_KEY || "6a68baf450e0cf971739",
       {
         cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "ap2",
-        authEndpoint: "http://127.0.0.1:8000/api/broadcasting/auth",
+        authEndpoint: `${process.env.NEXT_PUBLIC_API_URL}/api/broadcasting/auth`,
         auth: {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -65,20 +95,62 @@ export default function ChatWindow({ ticketId }: ChatWindowProps) {
 
     // Listen for new messages
     channelRef.current.bind("message.sent", (data: Message) => {
-      setMessages((prev) => [...prev, data]);
+      console.log("✅ Received message:", data); // Debug log
+      console.log("📊 Current messages count:", messages.length);
+      console.log("👁️ Is visible:", isVisibleRef.current);
 
-      // If message is from another user, mark it as read
+      setMessages((prev) => {
+        // Check if message already exists to avoid duplicates
+        const exists = prev.some((msg) => msg.id === data.id);
+        if (exists) {
+          console.log("⚠️ Duplicate message detected, skipping");
+          return prev;
+        }
+        console.log("✨ Adding new message to state");
+        return [...prev, data];
+      });
+
+      // Handle unread count and mark as read based on current visibility
       if (data.user.id !== user?.id) {
-        markMessagesAsRead();
+        if (isVisibleRef.current) {
+          // If chat is visible, mark message as read immediately
+          console.log("📖 Marking message as read (chat is visible)");
+          markMessagesAsRead();
+        } else {
+          // If chat is not visible, increment unread count
+          console.log("🔔 Incrementing unread count (chat is hidden)");
+          onUnreadUpdateRef.current?.(1);
+        }
       }
     });
 
-    // Handle connection errors
+    // Handle connection events
+    pusherRef.current.connection.bind("connected", () => {
+      console.log("🟢 Pusher connected successfully!"); // Debug log
+      console.log("📡 Channel:", `private-ticket.${ticketId}`);
+    });
+
     pusherRef.current.connection.bind("error", (err: any) => {
-      console.error("Pusher connection error:", err);
+      console.error("🔴 Pusher connection error:", err);
       toast.error(
         "Real-time connection failed. Messages may not update automatically."
       );
+    });
+
+    pusherRef.current.connection.bind("disconnected", () => {
+      console.log("🟡 Pusher disconnected");
+    });
+
+    // Debug: Log subscription success
+    channelRef.current.bind("pusher:subscription_succeeded", () => {
+      console.log(
+        "✅ Successfully subscribed to channel:",
+        `private-ticket.${ticketId}`
+      );
+    });
+
+    channelRef.current.bind("pusher:subscription_error", (err: any) => {
+      console.error("❌ Subscription error:", err);
     });
 
     return () => {
@@ -91,13 +163,13 @@ export default function ChatWindow({ ticketId }: ChatWindowProps) {
         pusherRef.current.disconnect();
       }
     };
-  }, [ticketId, token, user?.id]);
+  }, [ticketId, token, user?.id]); // Remove isVisible and onUnreadUpdate from dependencies
 
   const fetchMessages = async () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://127.0.0.1:8000/api/tickets/${ticketId}/chat/messages`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tickets/${ticketId}/chat/messages`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -123,7 +195,7 @@ export default function ChatWindow({ ticketId }: ChatWindowProps) {
   const markMessagesAsRead = async () => {
     try {
       await fetch(
-        `http://127.0.0.1:8000/api/tickets/${ticketId}/chat/messages/read`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tickets/${ticketId}/chat/messages/read`,
         {
           method: "POST",
           headers: {
@@ -142,7 +214,7 @@ export default function ChatWindow({ ticketId }: ChatWindowProps) {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/tickets/${ticketId}/chat/messages`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tickets/${ticketId}/chat/messages`,
         {
           method: "POST",
           headers: {
@@ -163,7 +235,7 @@ export default function ChatWindow({ ticketId }: ChatWindowProps) {
 
       // Optimistically add message to UI
       const sentMessage = {
-        id: Date.now(), // temporary ID until we get the real one from Pusher
+        id: Date.now(),
         message,
         type: "text" as const,
         is_read: false,

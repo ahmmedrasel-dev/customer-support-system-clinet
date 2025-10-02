@@ -3,14 +3,27 @@
 import React from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { useAuth } from "@/components/auth/AuthContext";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -36,7 +49,7 @@ type TicketFormValues = z.infer<typeof ticketSchema>;
 export default function CreateTicketPage() {
   const router = useRouter();
   const { token, isAuthenticated } = useAuth();
-  
+
   // Check authentication on component mount
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -44,7 +57,7 @@ export default function CreateTicketPage() {
       router.push("/");
     }
   }, [isAuthenticated, router]);
-  
+
   const form = useForm<TicketFormValues>({
     resolver: zodResolver(ticketSchema),
     defaultValues: {
@@ -78,20 +91,21 @@ export default function CreateTicketPage() {
         return;
       }
 
-      const response = await fetch("http://127.0.0.1:8000/api/tickets", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tickets`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         console.error("Server response:", errorData);
-        throw new Error(
-          errorData?.message || "Failed to create ticket"
-        );
+        throw new Error(errorData?.message || "Failed to create ticket");
       }
 
       const result = await response.json();
@@ -101,7 +115,11 @@ export default function CreateTicketPage() {
       router.push("/customer/tickets");
     } catch (error) {
       console.error("Full error details:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to create ticket. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to create ticket. Please try again."
+      );
     }
   }
 
@@ -119,7 +137,9 @@ export default function CreateTicketPage() {
       <Card className="max-w-xl mx-auto">
         <CardHeader>
           <CardTitle>Create a Support Ticket</CardTitle>
-          <CardDescription>Fill out the form to submit a new support ticket</CardDescription>
+          <CardDescription>
+            Fill out the form to submit a new support ticket
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -145,7 +165,7 @@ export default function CreateTicketPage() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <Textarea
                         placeholder="Describe your issue in detail"
                         className="min-h-[100px]"
                         {...field}
@@ -176,7 +196,10 @@ export default function CreateTicketPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Priority</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select priority level" />

@@ -68,7 +68,7 @@ export default function AdminCustomersPage() {
   const fetchCustomers = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/admin/customers",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/customers`,
         {
           method: "GET",
           headers: {

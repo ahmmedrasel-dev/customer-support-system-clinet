@@ -60,13 +60,16 @@ export default function CustomerTicketsPage() {
 
   const fetchTickets = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/tickets", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tickets`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch tickets");

@@ -16,7 +16,7 @@ const schema = z
   .object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirm: z.string().min(1, "Please confirm your password"),
   })
   .refine((data: any) => data.password === data.confirm, {
@@ -42,26 +42,32 @@ export default function RegistrationForm({ onSuccess }: Props) {
     setServerError(null);
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: values.name,
-          email: values.email,
-          password: values.password,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: values.name,
+            email: values.email,
+            password: values.password,
+          }),
+        }
+      );
       const data = await res.json();
       if (!res.ok) {
         toast.error(data?.message || data?.error || "Registration failed");
         return;
       }
       // Don't store token immediately, let user login instead
-      toast.success(data?.message || "Registration successful! Please log in with your credentials.");
-      
+      toast.success(
+        data?.message ||
+          "Registration successful! Please log in with your credentials."
+      );
+
       // Navigate to login page after successful registration
       router.push("/");
-      
+
       onSuccess?.();
     } catch (err: any) {
       setServerError(err?.message || "Request failed");
