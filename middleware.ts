@@ -38,10 +38,23 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Check if it's a customer route
+  if (request.nextUrl.pathname.startsWith("/customer")) {
+    if (!token || !userData) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    if (userData.role !== "customer") {
+      // Redirect non-customer users to home page
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
   return NextResponse.next();
 }
 
+// Check if it's a customer route
+
 // Configure the paths that should be protected
 export const config = {
-  matcher: ["/admin/:path*", "/", "/register"],
+  matcher: ["/admin/:path*", "/", "/register", "/customer/:path*"],
 };
