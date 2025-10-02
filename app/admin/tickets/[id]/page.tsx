@@ -41,6 +41,7 @@ import {
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { ChatWidget } from "@/components/chat";
 
 type Comment = {
   id: number;
@@ -566,6 +567,9 @@ export default function AdminTicketDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Chat Widget */}
+      <ChatWidget ticketId={parseInt(ticketId)} />
     </div>
   );
 }
