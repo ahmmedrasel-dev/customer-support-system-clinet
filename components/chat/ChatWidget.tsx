@@ -89,20 +89,22 @@ export default function ChatWidget({
 
   // Initialize chat state and fetch messages
   useEffect(() => {
-    // Only run once on mount
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-
-      // Restore chat open state
-      const storedIsOpen = localStorage.getItem(`chat_open_${ticketId}`);
-      if (storedIsOpen === 'true') {
-        setIsOpen(true);
-      }
-
-      // Initial message fetch
-      fetchMessages();
+    const storedIsOpen = localStorage.getItem(`chat_open_${ticketId}`);
+    if (storedIsOpen === 'true') {
+      setIsOpen(true);
     }
-  }, [ticketId, token]);
+
+    // Reset state when ticket changes
+    setMessages([]);
+    setUnreadCount(0);
+    setLoading(true);
+
+    // Fetch messages on mount and when ticket changes
+    fetchMessages();
+
+    // Track this effect ran
+    mountedRef.current = true;
+  }, [ticketId]);
 
   // Setup Pusher connection in the parent component
   useEffect(() => {
@@ -134,7 +136,7 @@ export default function ChatWidget({
 
     pusher.connection.bind('disconnected', () => {
       console.log('🔌 Pusher disconnected');
-      setTimeout(() => pusher.connect(), 1000); // Try to reconnect after 1 second
+      setTimeout(() => pusher.connect(), 1000);
     });
 
     const channel = pusher.subscribe(`ticket.${ticketId}`);
@@ -147,46 +149,57 @@ export default function ChatWidget({
       console.error(`❌ Failed to subscribe to ticket.${ticketId}:`, err);
     });
 
-    channel.bind("message.sent", (data: Message) => {
-      console.log('📨 Received message via Pusher:', data);
+    // Listen for new messages
+    const handleNewMessage = (data: Message) => {
+      console.log('📨 Received message:', data);
       
-      // Force re-render by creating new array reference
       setMessages((prev) => {
-        const messageExists = prev.some((msg) => msg.id === data.id);
-        if (messageExists) {
-          console.log('⚠️ Message already exists in state, skipping...', data.id);
-          return [...prev]; // Force re-render with same data
+        // Check if message already exists
+        if (prev.some((msg) => msg.id === data.id)) {
+          console.log('⚠️ Skipping duplicate message:', data.id);
+          return prev; // Keep existing messages
         }
-        console.log('✅ Adding new message to state:', data.id);
-        return [...prev, data];
+
+        // Sort messages by date after adding new one
+        const newMessages = [...prev, data].sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+
+        console.log('✅ Added new message:', data.id);
+        return newMessages;
       });
 
+      // Handle notifications and read status
       if (data.user.id !== user.id) {
         if (isOpen) {
-            console.log('📬 Marking new message as read...');
-            markMessagesAsRead(); // Remove setTimeout
-            setUnreadCount(0); // Reset unread count when message is received while open
+          console.log('📬 Chat open - marking as read');
+          markMessagesAsRead();
         } else {
-            console.log('📫 Incrementing unread count...');
-            setUnreadCount((prev) => prev + 1);
-            // Show notification for new message
-            toast.custom((t) => (
-              <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <p className="font-medium">New message in ticket #{ticketId}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{data.message}</p>
-              </div>
-            ), { duration: 5000 });
+          console.log('📫 Chat closed - showing notification');
+          setUnreadCount(prev => prev + 1);
+          toast.custom(
+            <div 
+              onClick={() => setIsOpen(true)}
+              className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <p className="font-medium">New message in ticket #{ticketId}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{data.message}</p>
+              <p className="text-xs text-blue-500 mt-2">Click to open chat</p>
+            </div>
+          , { duration: 5000 });
         }
       }
-    });
+    };
+
+    // Bind the message handler
+    channel.bind('message.sent', handleNewMessage);
     
-    // Cleanup on component unmount (e.g., when user navigates away)
     return () => {
       channel.unbind_all();
       pusher.unsubscribe(`ticket.${ticketId}`);
       pusher.disconnect();
     };
-  }, [ticketId, token, user, isOpen]); // isOpen কে dependency হিসেবে যোগ করা হয়েছে
+  }, [ticketId, token, user]);
 
   // Toggle chat and mark messages as read
   const toggleChat = () => {
@@ -223,16 +236,12 @@ export default function ChatWidget({
     );
 
     if (!response.ok) {
-      // সার্ভার থেকে error আসলে তা দেখাবে
       const errorData = await response.json();
       throw new Error(errorData.message || "Failed to send message");
     }
 
-    // --- key পরিবর্তন এখানে ---
-    // ১. API রেসপন্স থেকে সদ্য পাঠানো মেসেজটি গ্রহণ করুন
     const sentMessage: Message = await response.json();
 
-    // ২. UI-তে তাৎক্ষণিকভাবে নতুন মেসেজটি যোগ করুন
     setMessages((prevMessages) => [...prevMessages, sentMessage]);
     
   } catch (error: any) {
