@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { toast } from "react-hot-toast";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
+import { z } from "zod";
 
 type Props = {
   onSuccess?: () => void;
@@ -25,6 +27,7 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 export default function RegistrationForm({ onSuccess }: Props) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -53,8 +56,12 @@ export default function RegistrationForm({ onSuccess }: Props) {
         toast.error(data?.message || data?.error || "Registration failed");
         return;
       }
-      localStorage.setItem("access_token", data.access_token);
-      toast.success(data?.message || "Registration successful!");
+      // Don't store token immediately, let user login instead
+      toast.success(data?.message || "Registration successful! Please log in with your credentials.");
+      
+      // Navigate to login page after successful registration
+      router.push("/");
+      
       onSuccess?.();
     } catch (err: any) {
       setServerError(err?.message || "Request failed");
@@ -186,9 +193,9 @@ export default function RegistrationForm({ onSuccess }: Props) {
 
         <div className="mt-6 text-center text-sm text-slate-300">
           Already have an account?{" "}
-          <a href="/" className="text-sky-400 hover:underline">
+          <Link href="/" className="text-sky-400 hover:underline">
             Sign in
-          </a>
+          </Link>
         </div>
       </div>
     </div>
