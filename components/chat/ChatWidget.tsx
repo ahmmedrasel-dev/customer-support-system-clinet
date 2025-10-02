@@ -63,7 +63,6 @@ export default function ChatWidget({
   };
 
   const markMessagesAsRead = async () => {
-    // নতুন মেসেজ থাকলে তবেই API কল করুন
     const hasUnread = messages.some(msg => !msg.is_read && msg.user.id !== user?.id);
     if (!token || !hasUnread) return;
     
@@ -76,7 +75,6 @@ export default function ChatWidget({
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // UI-তে মেসেজগুলোকে সাথে সাথে read হিসেবে দেখান
       setMessages(prevMessages => 
         prevMessages.map(msg => ({ ...msg, is_read: true }))
       );
@@ -130,23 +128,21 @@ export default function ChatWidget({
     });
 
     pusher.connection.bind('error', (err: any) => {
-      console.error('❌ Pusher connection error:', err);
       toast.error('Chat connection error. Reconnecting...');
     });
 
     pusher.connection.bind('disconnected', () => {
-      console.log('🔌 Pusher disconnected');
       setTimeout(() => pusher.connect(), 1000);
     });
 
     const channel = pusher.subscribe(`ticket.${ticketId}`);
 
     channel.bind('pusher:subscription_succeeded', () => {
-      console.log(`✅ Successfully subscribed to ticket.${ticketId}`);
+      console.log(`Successfully subscribed to ticket.${ticketId}`);
     });
 
     channel.bind('pusher:subscription_error', (err: any) => {
-      console.error(`❌ Failed to subscribe to ticket.${ticketId}:`, err);
+      console.error(`Failed to subscribe to ticket.${ticketId}:`, err);
     });
 
     // Listen for new messages
@@ -156,7 +152,7 @@ export default function ChatWidget({
       setMessages((prev) => {
         // Check if message already exists
         if (prev.some((msg) => msg.id === data.id)) {
-          console.log('⚠️ Skipping duplicate message:', data.id);
+          console.log('Skipping duplicate message:', data.id);
           return prev; // Keep existing messages
         }
 
@@ -164,18 +160,14 @@ export default function ChatWidget({
         const newMessages = [...prev, data].sort((a, b) => 
           new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
-
-        console.log('✅ Added new message:', data.id);
         return newMessages;
       });
 
       // Handle notifications and read status
       if (data.user.id !== user.id) {
         if (isOpen) {
-          console.log('📬 Chat open - marking as read');
           markMessagesAsRead();
         } else {
-          console.log('📫 Chat closed - showing notification');
           setUnreadCount(prev => prev + 1);
           toast.custom(
             <div 
