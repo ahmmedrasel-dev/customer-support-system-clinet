@@ -52,7 +52,6 @@ export default function CustomerTicketsPage() {
     if (isLoading) return; // Wait for auth state to load
 
     if (!isAuthenticated) {
-      toast.error("Please log in to view your tickets");
       router.push("/");
       return;
     }
@@ -327,9 +326,11 @@ export default function CustomerTicketsPage() {
                         )}
                       </td>
                       <td className="p-4">
-                        <Button variant="ghost" size="sm">
-                          View Details
-                        </Button>
+                        <Link href={`/customer/tickets/${ticket.id}`}>
+                          <Button variant="ghost" size="sm">
+                            View Details
+                          </Button>
+                        </Link>
                       </td>
                     </tr>
                   ))}

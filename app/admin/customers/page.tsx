@@ -22,7 +22,6 @@ import {
   MoreHorizontal,
   Eye,
   Edit,
-  Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
