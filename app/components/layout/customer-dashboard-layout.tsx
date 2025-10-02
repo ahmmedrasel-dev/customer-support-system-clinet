@@ -22,7 +22,7 @@ export function CustomerDashboardLayout({ children }: Props) {
   };
 
   return (
-    <div className="min-h-screen w-full bg-zinc-700 text-gray-50 dark:bg-zinc-800 dark:text-gray-50">
+    <div className="min-h-screen w-full bg-background text-foreground dark:bg-gray-900 dark:text-gray-100">
       <CustomerSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

@@ -10,7 +10,7 @@ export function AdminDashboardLayout({ children }: any) {
   const pageTitle = "Dashboard";
 
   return (
-    <div className="min-h-screen w-full bg-zinc-700 text-gray-50 dark:bg-zinc-800 dark:text-gray-50">
+    <div className="min-h-screen w-full bg-background text-foreground dark:bg-gray-900 dark:text-gray-100">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-col md:pl-64 h-screen">
         <Header
