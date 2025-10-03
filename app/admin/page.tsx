@@ -37,6 +37,8 @@ export default function AdminPage() {
   const { user, token } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [loading, setLoading] = useState(false);
+  const [admins, setAdmins] = useState<{id:number;name:string;}[]>([]);
+  const [assigning, setAssigning] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchRecent = async () => {
@@ -77,6 +79,21 @@ export default function AdminPage() {
     };
 
     fetchRecent();
+
+    // fetch admin users for assignment
+    (async () => {
+      if (!token || !user) return;
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+        const res = await fetch(`${apiUrl}/api/admin/admins`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) {
+          const json = await res.json();
+          setAdmins(json.data || []);
+        }
+      } catch (e) {
+        console.error('Failed to fetch admins', e);
+      }
+    })();
   }, [token, user]);
 
   const counts = tickets.reduce(
@@ -309,6 +326,41 @@ export default function AdminPage() {
                           >
                             Next Status
                           </Button>
+                          <div className="flex items-center gap-2">
+                            <select
+                              className="text-sm rounded px-2 py-1"
+                              defaultValue=""
+                              onChange={async (e) => {
+                                const adminId = Number(e.target.value);
+                                if (!adminId) return;
+                                setAssigning(prev => ({ ...prev, [t.id]: true }));
+                                try {
+                                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+                                  const res = await fetch(`${apiUrl}/api/tickets/${t.id}/assign`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                    body: JSON.stringify({ assigned_to: adminId }),
+                                  });
+                                  if (res.ok) {
+                                    const updated = await res.json();
+                                    setTickets(prev => prev.map(p => p.id === String(updated.id) ? { ...p, agent: updated.assignedUser?.name || p.agent } : p));
+                                  } else {
+                                    console.error('Assign failed', res.status);
+                                  }
+                                } catch (err) {
+                                  console.error('Assign error', err);
+                                } finally {
+                                  setAssigning(prev => ({ ...prev, [t.id]: false }));
+                                }
+                              }}
+                            >
+                              <option value="">Assign...</option>
+                              {admins.map(a => (
+                                <option key={a.id} value={a.id}>{a.name}</option>
+                              ))}
+                            </select>
+                            {assigning[t.id] && <span className="text-xs">Assigning...</span>}
+                          </div>
                         </div>
                       </td>
                     </tr>
