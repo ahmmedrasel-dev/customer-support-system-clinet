@@ -1,4 +1,5 @@
 import { AuthProvider } from "@/components/auth/AuthContext";
+import { NotificationProvider } from "@/components/notifications/NotificationContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
@@ -37,8 +38,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Toaster position="top-right" />
-            {children}
+            <NotificationProvider>
+              <Toaster position="top-right" />
+              {children}
+            </NotificationProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

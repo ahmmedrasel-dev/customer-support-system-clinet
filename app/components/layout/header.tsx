@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
-import { Menu, Search, Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import NotificationBell from "@/components/notifications/NotificationBell";
+import { Menu, Search } from "lucide-react";
 import { ThemeToggle } from "./theme";
 import { UserMenu } from "./user-menu";
 
@@ -25,14 +24,7 @@ export const Header = ({ onMenuClick, pageTitle }: any) => (
       />
     </div>
     <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="rounded-full text-muted-foreground hover:text-foreground"
-      >
-        <Bell className="h-5 w-5" />
-        <span className="sr-only">Notifications</span>
-      </Button>
+      <NotificationBell />
       <ThemeToggle />
       <UserMenu />
     </div>
