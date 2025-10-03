@@ -1,7 +1,7 @@
 "use client";
 
-import NotificationBell from "@/components/notifications/NotificationBell";
 import { Menu, Search } from "lucide-react";
+import NotificationBell from "../notifications/NotificationBell";
 import { ThemeToggle } from "./theme";
 import { UserMenu } from "./user-menu";
 

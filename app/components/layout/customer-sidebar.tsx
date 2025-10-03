@@ -17,7 +17,7 @@ export const CustomerSidebar = ({ isOpen, onClose }: any) => {
   const pathname = usePathname();
 
   const navItems = [
-    { href: "/customer/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/customer", icon: LayoutDashboard, label: "Dashboard" },
     {
       href: "/customer/create-ticket",
       icon: MessageSquare,

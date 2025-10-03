@@ -124,6 +124,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       {
         cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER || "ap2",
         forceTLS: true,
+        authEndpoint: `${apiUrl}/api/broadcasting/auth`,
+        auth: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       }
     );
 

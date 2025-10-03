@@ -1,8 +1,8 @@
 import { AuthProvider } from "@/components/auth/AuthContext";
-import { NotificationProvider } from "@/components/notifications/NotificationContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import { NotificationProvider } from "./components/notifications/NotificationContext";
 import { ThemeProvider } from "./components/theme-provider";
 import "./globals.css";
 
