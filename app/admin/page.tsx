@@ -1,24 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Archive,
+  ArrowDown,
+  ArrowUp,
+  CheckCircle,
   Inbox,
   RefreshCw,
-  CheckCircle,
-  Archive,
-  ArrowUp,
-  ArrowDown,
 } from "lucide-react";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+
+import { useAuth } from "../../components/auth/AuthContext";
 
 type Ticket = {
   id: string;
@@ -29,48 +31,53 @@ type Ticket = {
   priority: "Low" | "Medium" | "High";
   date: string;
 };
-
-const initialTickets: Ticket[] = [
-  {
-    id: "TCK-1001",
-    subject: "Cannot login to account",
-    customer: "Alice Johnson",
-    agent: "Sam",
-    status: "Open",
-    priority: "High",
-    date: "2025-10-01",
-  },
-  {
-    id: "TCK-1000",
-    subject: "Payment not processed",
-    customer: "Bob Martin",
-    agent: "Priya",
-    status: "In Progress",
-    priority: "Medium",
-    date: "2025-09-30",
-  },
-  {
-    id: "TCK-0999",
-    subject: "Feature request: export",
-    customer: "Charlie Park",
-    agent: "Mina",
-    status: "Resolved",
-    priority: "Low",
-    date: "2025-09-28",
-  },
-  {
-    id: "TCK-0998",
-    subject: "Bug: UI overlap on mobile",
-    customer: "Dana Lee",
-    agent: "Sam",
-    status: "Closed",
-    priority: "Low",
-    date: "2025-09-20",
-  },
-];
+const initialTickets: Ticket[] = [];
 
 export default function AdminPage() {
+  const { user, token } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      if (!token || !user) return;
+      setLoading(true);
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+        const res = await fetch(`${apiUrl}/api/admin/recent-tickets`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.status === 403) {
+          setTickets([]);
+          console.warn('Unauthorized to fetch recent tickets');
+          setLoading(false);
+          return;
+        }
+
+        if (res.ok) {
+          const json = await res.json();
+          const data: Ticket[] = (json.data || []).map((t: any) => ({
+            id: String(t.id),
+            subject: t.subject || "",
+            customer: t.customer || "",
+            agent: t.agent || "",
+            status: (t.status || "Open") as Ticket['status'],
+            priority: (t.priority || "Low") as Ticket['priority'],
+            date: t.created_at || "",
+          }));
+          setTickets(data);
+        } else {
+          console.error('Failed to fetch recent tickets', res.status);
+        }
+      } catch (err) {
+        console.error('Error fetching recent tickets', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecent();
+  }, [token, user]);
 
   const counts = tickets.reduce(
     (acc, t) => {
@@ -204,7 +211,45 @@ export default function AdminPage() {
             <CardDescription>Latest support tickets</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="flex items-center justify-between mb-4">
+              <div />
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="ghost" onClick={() => {
+                  setLoading(true);
+                  // trigger refetch by updating token dependency
+                  (async () => {
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+                    try {
+                      const res = await fetch(`${apiUrl}/api/admin/recent-tickets`, { headers: { Authorization: `Bearer ${token}` } });
+                      if (res.ok) {
+                        const json = await res.json();
+                        const data: Ticket[] = (json.data || []).map((t: any) => ({
+                          id: String(t.id),
+                          subject: t.subject || "",
+                          customer: t.customer || "",
+                          agent: t.agent || "",
+                          status: (t.status || "Open") as Ticket['status'],
+                          priority: (t.priority || "Low") as Ticket['priority'],
+                          date: t.created_at || "",
+                        }));
+                        setTickets(data);
+                      }
+                    } catch (e) {
+                      console.error(e);
+                    } finally {
+                      setLoading(false);
+                    }
+                  })();
+                }}>
+                  <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+                </Button>
+              </div>
+            </div>
             <div className="overflow-x-auto">
+              {loading && <div className="p-4">Loading recent tickets...</div>}
+              {!loading && tickets.length === 0 && (
+                <div className="p-4 text-sm text-muted-foreground">No recent tickets to show or you may not have access.</div>
+              )}
               <table className="w-full table-auto text-sm">
                 <thead>
                   <tr className="text-left text-muted-foreground">
