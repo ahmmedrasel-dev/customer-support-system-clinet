@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/components/auth/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +19,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type Ticket = {
   id: string;
@@ -29,48 +30,54 @@ type Ticket = {
   priority: "Low" | "Medium" | "High";
   date: string;
 };
-
-const initialTickets: Ticket[] = [
-  {
-    id: "TCK-1001",
-    subject: "Cannot login to account",
-    customer: "Alice Johnson",
-    agent: "Sam",
-    status: "Open",
-    priority: "High",
-    date: "2025-10-01",
-  },
-  {
-    id: "TCK-1000",
-    subject: "Payment not processed",
-    customer: "Bob Martin",
-    agent: "Priya",
-    status: "In Progress",
-    priority: "Medium",
-    date: "2025-09-30",
-  },
-  {
-    id: "TCK-0999",
-    subject: "Feature request: export",
-    customer: "Charlie Park",
-    agent: "Mina",
-    status: "Resolved",
-    priority: "Low",
-    date: "2025-09-28",
-  },
-  {
-    id: "TCK-0998",
-    subject: "Bug: UI overlap on mobile",
-    customer: "Dana Lee",
-    agent: "Sam",
-    status: "Closed",
-    priority: "Low",
-    date: "2025-09-20",
-  },
-];
+const initialTickets: Ticket[] = [];
 
 export default function CustomerPage() {
+  const { token, user, isLoading: authLoading, isAuthenticated } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+    fetchUserTickets();
+  }, [token]);
+
+  const fetchUserTickets = async () => {
+    setLoading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${apiUrl}/api/tickets`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        console.error('Failed to fetch tickets', res.status);
+        setTickets([]);
+        return;
+      }
+      const data = await res.json();
+      // API returns either an array or { data: [...] }
+      const arr: any[] = Array.isArray(data) ? data : (data.data || []);
+      const sorted = arr
+        .slice()
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5)
+        .map((t) => ({
+          id: String(t.id),
+          subject: t.subject || 'No subject',
+          customer: t.user?.name || user?.name || '',
+          agent: t.assignedUser?.name || '',
+          status: (t.status || 'Open') as Ticket['status'],
+          priority: (t.priority || 'Low') as Ticket['priority'],
+          date: t.created_at || t.createdAt || '',
+        }));
+      setTickets(sorted);
+    } catch (err) {
+      console.error('Error fetching user tickets', err);
+      setTickets([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const counts = tickets.reduce(
@@ -206,36 +213,34 @@ export default function CustomerPage() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full table-auto text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground">
-                    <th className="px-3 py-2">Ticket</th>
-                    <th className="px-3 py-2">Subject</th>
-                    <th className="px-3 py-2">Customer</th>
-                    <th className="px-3 py-2">Agent</th>
-                    <th className="px-3 py-2">Priority</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="px-3 py-2">Date</th>
-                    <th className="px-3 py-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tickets.map((t) => (
-                    <tr key={t.id} className="border-t">
-                      <td className="px-3 py-2 font-medium">{t.id}</td>
-                      <td className="px-3 py-2 max-w-xs truncate">
-                        {t.subject}
-                      </td>
-                      <td className="px-3 py-2">{t.customer}</td>
-                      <td className="px-3 py-2">{t.agent}</td>
-                      <td className="px-3 py-2">
-                        <span className="text-xs rounded-full px-2 py-1 bg-zinc-800 text-muted-foreground">
-                          {t.priority}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
+              {loading && <div className="p-4">Loading your recent tickets...</div>}
+              {!loading && tickets.length === 0 && (
+                <div className="p-4 text-sm text-muted-foreground">You have no recent tickets.</div>
+              )}
+              {!loading && tickets.length > 0 && (
+                <table className="w-full table-auto text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th className="px-3 py-2">Ticket</th>
+                      <th className="px-3 py-2">Subject</th>
+                      <th className="px-3 py-2">Agent</th>
+                      <th className="px-3 py-2">Priority</th>
+                      <th className="px-3 py-2">Status</th>
+                      <th className="px-3 py-2">Date</th>
+                      <th className="px-3 py-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tickets.map((t) => (
+                      <tr key={t.id} className="border-t">
+                        <td className="px-3 py-2 font-medium">{t.id}</td>
+                        <td className="px-3 py-2 max-w-xs truncate">{t.subject}</td>
+                        <td className="px-3 py-2">{t.agent}</td>
+                        <td className="px-3 py-2">
+                          <span className="text-xs rounded-full px-2 py-1 bg-zinc-800 text-muted-foreground">{t.priority}</span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
                             t.status === "Open"
                               ? "bg-red-100 text-red-800"
                               : t.status === "In Progress"
@@ -243,34 +248,21 @@ export default function CustomerPage() {
                               : t.status === "Resolved"
                               ? "bg-green-100 text-green-800"
                               : "bg-zinc-700 text-gray-200"
-                          }`}
-                        >
-                          {t.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground">
-                        {t.date}
-                      </td>
-                      <td className="px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <Link href={`/admin/tickets/${t.id}`}>
-                            <Button variant="ghost" size="sm">
-                              View
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleNextStatus(t.id)}
-                          >
-                            Next Status
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          }`}>{t.status}</span>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">{t.date}</td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <Link href={`/admin/tickets/${t.id}`}>
+                              <Button variant="ghost" size="sm">View</Button>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </CardContent>
           <CardFooter>
