@@ -6,10 +6,11 @@ import Link from "next/link";
 import {
   Package,
   Home,
-  ShoppingCart,
   Users,
   Ticket,
   Settings,
+  Settings2,
+  ShieldUser,
 } from "lucide-react";
 
 export const Sidebar = ({ isOpen, onClose }: any) => {
@@ -19,8 +20,8 @@ export const Sidebar = ({ isOpen, onClose }: any) => {
     { href: "/admin", icon: Home, label: "Dashboard" },
     { href: "/admin/tickets", icon: Ticket, label: "Support Tickets" },
     { href: "/admin/customers", icon: Users, label: "Customers" },
-    { href: "/admin/orders", icon: ShoppingCart, label: "Orders" },
-    { href: "/admin/products", icon: Package, label: "Products" },
+    { href: "/admin/profile", icon: Settings2, label: "Profile" },
+    { href: "/admin/all-admin", icon: ShieldUser, label: "Admins" },
     { href: "/admin/settings", icon: Settings, label: "Settings" },
   ];
 
