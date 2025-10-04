@@ -1,3 +1,4 @@
+"use client";
 import DevPlaceholder from "@/components/development";
 import React from "react";
 
