@@ -1,4 +1,19 @@
+
 # Customer Support System — Client
+
+## Project Links
+
+- **Client:** [https://github.com/ahmmedrasel-dev/customer-support-system-clinet.git](https://github.com/ahmmedrasel-dev/customer-support-system-clinet.git)
+- **API:** [https://github.com/ahmmedrasel-dev/customer-support-system-api.git](https://github.com/ahmmedrasel-dev/customer-support-system-api.git)
+
+## Demo Admin Credentials
+
+- **Email:** `admin@customersystem.com`
+- **Password:** `12345678`
+
+## Registration Info
+
+- When you register, a customer account is automatically created.
 
 A modern, responsive client interface for a customer support / ticketing system built with Next.js (App Router) and Tailwind CSS. This repository contains the front-end (client) application with authentication, role-based access control, and separate dashboards for customers and administrators.
 
