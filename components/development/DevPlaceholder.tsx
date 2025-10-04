@@ -23,24 +23,6 @@ export function DevPlaceholder({
       style={{ animation: "fadeIn 0.7s" }}
     >
       <div className="flex flex-col items-center gap-4">
-        <span className="mb-2 animate-bounce">
-          {/* Modern construction icon */}
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-yellow-500 dark:text-yellow-300"
-          >
-            <path d="M9 17v-6a3 3 0 0 1 6 0v6" />
-            <rect x="5" y="17" width="14" height="2" rx="1" />
-            <path d="M2 17h20" />
-          </svg>
-        </span>
         <div className="flex items-center gap-3">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {title}
